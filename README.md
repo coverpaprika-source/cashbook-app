@@ -11,3 +11,30 @@ To run this application:
 ```
 npm run dev
 ```
+
+## Deploy as a Static Site
+
+This app is ready to export as a static site. That means you can host it on any static hosting service and open it on your phone without using Codespaces.
+
+Build and export:
+
+```
+npm install
+npm run export
+```
+
+The generated static files are placed in the `out/` folder. You can host that folder on services such as Vercel, Netlify, GitHub Pages, or any static web host.
+
+To preview locally after export:
+
+```
+npm run start
+```
+
+### Recommended deployment
+
+- Publish your repository to GitHub
+- Connect it to Vercel or Netlify
+- Deploy the `main` branch
+
+Then open the generated public URL on your phone and use the app anytime.

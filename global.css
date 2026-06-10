@@ -1,14 +1,42 @@
+html {
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 32%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.16), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 body {
-  font-family: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica',
-    'Arial', sans-serif;
-  margin: 0 auto;
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Inter', 'Sarabun', 'Prompt', 'Segoe UI', sans-serif;
   font-size: 16px;
-  line-height: 1.65;
-  word-break: break-word;
-  font-kerning: auto;
-  font-variant: normal;
+  line-height: 1.6;
+  color: #0f172a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  hyphens: auto;
+  background: transparent;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: rgba(59, 130, 246, 0.18);
 }

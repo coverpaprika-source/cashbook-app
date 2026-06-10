@@ -1,14 +1,17 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next",
+    "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "export": "next build",
+    "start": "serve out"
   },
   "dependencies": {
     "next": "^16.2.3",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "jspdf": "^2.5.1",
+    "serve": "^14.2.6"
   },
   "overrides": {
     "postcss": "^8.5.10"

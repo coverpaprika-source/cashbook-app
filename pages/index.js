@@ -1,10 +1,45 @@
+import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from '../styles/home.module.css'
 
 const STORAGE_KEY = 'cashbook.entries.v1'
+const CATEGORY_STORAGE_KEY = 'cashbook.categories.v1'
 
-const INCOME_CATEGORIES = ['กยศ.', 'พ่อให้', 'ปู่ให้', 'ย่าให้', 'ย่าแดงให้', 'อาให้']
-const EXPENSE_CATEGORIES = ['อาหาร', 'เดินทาง', 'หอพัก', 'สุขภาพ', 'บิล/ค่าใช้จ่าย', 'ของจำเป็น', 'บันเทิง', 'อื่นๆ']
+const DEFAULT_INCOME_CATEGORIES = ['กยศ.', 'พ่อให้', 'ปู่ให้', 'ย่าให้', 'ย่าแดงให้', 'อาให้']
+const DEFAULT_EXPENSE_CATEGORIES = ['อาหาร', 'เดินทาง', 'หอพัก', 'สุขภาพ', 'บิล/ค่าใช้จ่าย', 'ของจำเป็น', 'บันเทิง', 'อื่นๆ']
+
+function parseStoredCategories(value) {
+  if (!value) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(value)
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      Array.isArray(parsed.income) &&
+      Array.isArray(parsed.expense)
+    ) {
+      return {
+        income: parsed.income.length > 0 ? parsed.income : DEFAULT_INCOME_CATEGORIES,
+        expense: parsed.expense.length > 0 ? parsed.expense : DEFAULT_EXPENSE_CATEGORIES,
+      }
+    }
+  } catch {
+    // ignore invalid data
+  }
+
+  return null
+}
+
+function loadCategories() {
+  const stored = parseStoredCategories(window.localStorage.getItem(CATEGORY_STORAGE_KEY))
+  return stored || {
+    income: DEFAULT_INCOME_CATEGORIES,
+    expense: DEFAULT_EXPENSE_CATEGORIES,
+  }
+}
 
 const currencyFormatter = new Intl.NumberFormat('th-TH', {
   style: 'currency',
@@ -69,7 +104,7 @@ function emptyForm(dateValue = todayValue()) {
     id: null,
     title: '',
     type: 'expense',
-    category: EXPENSE_CATEGORIES[0],
+    category: DEFAULT_EXPENSE_CATEGORIES[0],
     amount: '',
     date: dateValue,
     note: '',
@@ -329,6 +364,7 @@ function drawSummaryImage({ monthLabel, totals, incomeMatrix, expenseMatrix, ent
 
 export default function Home() {
   const [entries, setEntries] = useState([])
+  const [categories, setCategories] = useState({ income: [], expense: [] })
   const [form, setForm] = useState(() => emptyForm())
   const [selectedMonth, setSelectedMonth] = useState(currentMonthValue())
   const [selectedWeek, setSelectedWeek] = useState('all')
@@ -339,11 +375,16 @@ export default function Home() {
   useEffect(() => {
     const storedEntries = parseStoredEntries(window.localStorage.getItem(STORAGE_KEY))
     setEntries(storedEntries)
+    setCategories(loadCategories())
   }, [])
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
   }, [entries])
+
+  useEffect(() => {
+    window.localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(categories))
+  }, [categories])
 
   const availableMonths = useMemo(() => {
     const monthSet = new Set(entries.map((entry) => entry.date.slice(0, 7)))
@@ -377,9 +418,9 @@ export default function Home() {
     )
   }, [monthEntries])
 
-  const incomeMatrix = useMemo(() => buildCategoryMatrix(monthEntries, selectedMonth, INCOME_CATEGORIES, 'income'), [monthEntries, selectedMonth])
-  const expenseMatrix = useMemo(() => buildCategoryMatrix(monthEntries, selectedMonth, EXPENSE_CATEGORIES, 'expense'), [monthEntries, selectedMonth])
-  const categories = form.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
+  const incomeMatrix = useMemo(() => buildCategoryMatrix(monthEntries, selectedMonth, categories.income, 'income'), [monthEntries, selectedMonth, categories])
+  const expenseMatrix = useMemo(() => buildCategoryMatrix(monthEntries, selectedMonth, categories.expense, 'expense'), [monthEntries, selectedMonth, categories])
+  const categoryOptions = form.type === 'income' ? categories.income : categories.expense
   const incomeShare = totals.income + totals.expense > 0 ? totals.income / (totals.income + totals.expense) : 0
   const chartBackground =
     totals.income + totals.expense > 0
@@ -387,13 +428,13 @@ export default function Home() {
       : 'conic-gradient(#cbd5e1 0turn 1turn)'
 
   useEffect(() => {
-    if (!categories.includes(form.category)) {
+    if (categoryOptions.length > 0 && !categoryOptions.includes(form.category)) {
       setForm((current) => ({
         ...current,
-        category: categories[0],
+        category: categoryOptions[0],
       }))
     }
-  }, [categories, form.category])
+  }, [categoryOptions, form.category])
 
   useEffect(() => {
     const previousDefault = `cashbook-${previousMonthRef.current}`
@@ -603,7 +644,10 @@ export default function Home() {
                     setForm((current) => ({
                       ...current,
                       type: event.target.value,
-                      category: event.target.value === 'income' ? INCOME_CATEGORIES[0] : EXPENSE_CATEGORIES[0],
+                      category:
+                        event.target.value === 'income'
+                          ? categories.income[0] ?? ''
+                          : categories.expense[0] ?? '',
                     }))
                   }
                 >
@@ -630,7 +674,7 @@ export default function Home() {
                   value={form.category}
                   onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
                 >
-                  {categories.map((category) => (
+                  {categoryOptions.map((category) => (
                     <option key={category} value={category}>
                       {category}
                     </option>
@@ -676,6 +720,9 @@ export default function Home() {
               <h2>ประวัติรายสัปดาห์</h2>
             </div>
             <div className={styles.headerControls}>
+              <Link href="/categories" className={styles.ghostButton}>
+                จัดการหมวดหมู่
+              </Link>
               <select
                 className={styles.monthSelect}
                 value={selectedMonth}

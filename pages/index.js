@@ -705,7 +705,7 @@ export default function Home() {
               >
                 <option value="all">ทุกสัปดาห์</option>
                 <option value="0">สัปดาห์ 1</option>
-                <option value="1">สัปวาห์ 2</option>
+                <option value="1">สัปดาห์ 2</option>
                 <option value="2">สัปดาห์ 3</option>
                 <option value="3">สัปดาห์ 4</option>
                 <option value="4">สัปดาห์ 5</option>
